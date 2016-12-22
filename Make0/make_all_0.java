@@ -13,7 +13,7 @@ import java.util.Locale;
  * @date: December, 2015 @ UVa
  *  
  **/
-public class LimpiaElTablero {
+public class make_all_0 {
 
  	public static Scanner coger;
  	public static PrintWriter dar;
