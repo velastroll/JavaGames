@@ -1,125 +1,183 @@
+import java.io.*;
 import java.util.Arrays;
 import java.util.Scanner;
+import java.util.Locale;
 
-public class make_all_0 {
-	/* JUEGO CREADO POR:
- 	* @author Alvaro Velasco @Velastroll
- 	*
- 	* 1 ING.INF. @ UVa
- 	*/
+/**
+ * First university simple game in Java.
+ * The structure is very bad, but is not a problem because was our first contact with Java.
+ *
+ * 
+ * @author: Javier Helguera, @Helguera
+ * @author: Alvaro Velasco, @Velastroll
+ * @date: December, 2015 @ UVa
+ *  
+ **/
+public class LimpiaElTablero {
 
+ 	public static Scanner coger;
+ 	public static PrintWriter dar;
+	public static Scanner teclado;
+	
 	public static void main(String[] args) {
-
-    	int f=6, c=6, max = f*10+c, play = 0; // Cambiando el valor de F o C tendremos un juego diferente
+    	int f=6, c=6, max = f*10+c, play = 0; 		// Cambiando el valor de F o C tendremos un juego diferente
     	int[][] matriz = new int [f] [c];
     	int[][] matrizfinal = new int [f] [c];
  
-    	int nivel = 5; // Predeterminadamente se empieza en el nivel 5
+    	int nivel = 5;								// Predeterminadamente se empieza en el nivel 5
     	int golpes = 0;
-
-    	Scanner teclado;
+    	int [] result = new int [9];
+    	
+    	String fichero = "puntuacion.txt";				// Se toman las puntuaciones almacenadas.
+		for (int lvl=0 ; lvl < 9 ; lvl++){
+			result[lvl] = extraer(lvl, fichero);
+		}
+		
     	teclado = new Scanner (System.in);
-
-    	//Se genera un tablero aleatorio
-
-    	matriz = genMnivel(nivel, f, c);
+    	teclado.useLocale(Locale.US);
+    	matriz = genMnivel(nivel, f, c);			//Se genera un tablero aleatorio
     	info (matriz, golpes, nivel);
 
     	matrizfinal = genMde0(f,c); 	// matriz de 0 con la que se comparala usada en el juego para saber si se ha resuelto
-    	int[][] mA = copyArray(matriz); //mA es la copia de la matriz inicial que se usará por si se quiere recomenzar a jugar
-
-    	/* COMANDOS DEL MENÚ */
-    	
-    	while (play != -2) {							// (-2) Cuando 'play' sea -2 se sale del juego.
-
-        	play = teclado.nextInt(); 					// variable utilizada para comandos y para jugar
-
-        	if (play==1){ 								// (1) Recomenzamos el tablero, guardado en mA
-            	matriz=copyArray(mA);
-            	golpes = 0;
+    	int[][] mA = copyArray(matriz); // mA es la copia de la matriz inicial que se usarÃ¡ por si se quiere recomenzar a jugar
+  	
+     	estructura (f,c,play,max,matriz,matrizfinal,nivel,golpes,result, mA, fichero); // Estructura del programa
+	}
+	
+	public static void estructura (int f, int c, int play,  int max, int [][] matriz, int [][] matrizfinal, int nivel, int golpes, int [] result , int [][]mA, String fichero) {
+    	while (play != -2) {   			
+	 			play = teclado.nextInt();	// PLAY = variable utilizada para comandos y para jugar    		
+		
+    	if (play==1){ 								// (1) Recomenzamos el tablero, guardado en mA
+        	matriz=copyArray(mA);
+        	golpes = 0;								// al recomenzar, los golpes vuelven a 0
+        	info (matriz, golpes, nivel);
+    	}
+    	else {
+        	if (play == 2){							// (2) Obtenemos un tablero nuevo del mismo nivel
+            	
+        		if ((golpes!=0) && (result[nivel-1]<50)){
+            		result[nivel-1] = 50; 	// si se sale de una partida empezada la calificaciÃ³n es de 0.5
+            		}
+        		matriz = genMnivel (nivel,f,c);
+        		golpes=0;
             	info (matriz, golpes, nivel);
-        	}
-        	else {
-            	if (play == 2){							// (2) Obtenemos un tablero nuevo del mismo nivel
-                	matriz = genMnivel (nivel,f,c);
-                	info (matriz, golpes, nivel);
+
+            	}
+        	else {					
+            	if (play==3){ 				// (3) Puntuaciones mÃ¡s altas
+         			System.out.println ("#PUNTUACIONES MÃS ALTAS#");
+         		for (int i=0; i<9; i++){
+         			System.out.println ("nivel " + (i+1) + ": " + result [i]/100.); // guardado en un INT, lo pasamos a double dividiendo entre 100.	
+         		}
+         		
+         		System.out.println ("Â¿Desea restablecer las puntuaciones? (-1=SÃ­	1=No)");
+         		
+         		int rest = teclado.nextInt();
+         										// opciÃ³n de restablecer la puntuaciÃ³n
+         		while (rest != 1 && rest!=-1){
+         			System.out.println ("NÃºmero no vÃ¡lido");
+         			rest = teclado.nextInt();
+
+         		}
+         		if (rest == 1){
+             		System.out.println ("Siga jugando...");
+         		}
+         		if (rest == -1){
+         			for (int i=0; i<9; i++){
+         				result[i]=0;
+         			}
+         			System.out.println ("Â¡PUNTUACIÃ“N RESTABLECIDA!");
+
+         		}
+            	
+            	}
+            	
+            	else { if (play==4) {				// (4) Cambiar de nivel
+
+                	System.out.println("Â¿A quÃ© nivel del 1 al 9 desea cambiar? (Escriba 0 para seguir igual)");
+            		int a = teclado.nextInt();
+                	if (a==0){
+
+                    	System.out.println("# CONTINÃšA COMO ANTES #");
+                    	System.out.println("");
+                    	info (matriz, golpes,nivel);
+                	} else {
+                		if ((golpes!=0) && (result[nivel-1]<50)){		 // Excepto si es una puntuaciÃ³n mayor,
+                		result[nivel-1] = 50; 	// al salir de una partida empezada la calificaciÃ³n es de 0.5
+                		}
+                		
+                		nivel = a;
+                    	while (a<1 || 9<a) { 		// Por si el numero introducido no es vÃ¡lido
+                        	System.out.println("Nivel no vÃ¡lido, pruebe de nuevo introduciendo un nÃºmero entero del 1 al 9");
+                        	nivel = teclado.nextInt();
+                        
+                        	}
+                    	golpes=0;
+                    	matriz = genMnivel(nivel, f, c);
+                    	System.out.println("# HA CAMBIADO AL NIVEL " + nivel + " #");
+                    	System.out.println("");
+                    	info (matriz, golpes,nivel);
+
+                    	mA = copyArray(matriz); 			// al cambiar de nivel, volvemos a actualizar mA
+
+                		}
 
                 	}
-            	else {					
-                	if (play==3){/* calificacion */	}	// (3) Datos sobre la clasificación
-                	
-                	else { if (play==4) {				// (4) Cambiar de nivel
-
-                    	System.out.println("¿A qué nivel del 1 al 9 desea cambiar? (Escriba 0 para seguir igual)");
-                		int a = teclado.nextInt();
-                    	if (a==0){
-
-                        	System.out.println("# CONTINÚA COMO ANTES #");
-                        	System.out.println("");
-                        	info (matriz, golpes,nivel);
-                    	} else {
-                    		
-                    		nivel = a;
-                        	while (a<1 || 9<a) { 		// Por si el numero introducido no es válido
-                            	System.out.println("Nivel no válido, pruebe de nuevo introduciendo un número entero del 1 al 9");
-                            	nivel = teclado.nextInt();
-                            	golpes=0;
-                            	}
-                        	matriz = genMnivel(nivel, f, c);
-                        	System.out.println("# HA CAMBIADO AL NIVEL " + nivel + " #");
-                        	System.out.println("");
-                        	info (matriz, golpes,nivel);
-
-                        	mA = copyArray(matriz); 			// al cambiar de nivel, volvemos a actualizar mA
-
-
+                	else {									// Para el resto de numero que puede ser 'play'
                     	
-                    		}
-
-                    	}
-                    	else {									// Para el resto de numero que puede ser 'play'
-                        	if (play<max+1 & 10<play & play%10<=c) {
-                        		
-                            	golpes += 1;
-                            	matriz = juego(play, matriz);
-                            	info (matriz, golpes,nivel);
+                		if (play<max+1 & 10<play & play%10<=c) { //Si es un nÃºmero vÃ¡lido, se resta en la casilla y vecinas
+                    		
+                        	golpes++;
+                        	matriz = juego(play, matriz);	
+                        	info (matriz, golpes,nivel);
+                        	
+                        	if (Arrays.deepEquals(matrizfinal, matriz)){		 // Se ejecuta cuando ganas el juego
+                            	                          		
+                            	double resultado = infojuegoganado (nivel, golpes);
+                            	if (result[nivel-1] == 0) {
+                            		result [nivel-1]= (int)(resultado*100);
+                            	}
+                            	else {
+                            		if ((resultado*100) > result[nivel-1]) {
+                            			result [nivel-1] = (int) (resultado*100);
+                            		}
+                            	}
+                            	play = teclado.nextInt();
                             	
-                            	if (Arrays.deepEquals(matrizfinal, matriz)){		 // Se ejecuta cuando ganas el juego
-                                	                          		
-                                	infojuegoganado (nivel, golpes);
+                            	while (play !=1 && play !=-1) {
+
+                                	System.out.print("Introduzca bien el nÃºmero: ");
                                 	play = teclado.nextInt();
                                 	
-                                	while (play !=1 && play !=-1) {
+                                	}
 
-                                    	System.out.print("Introduzca bien el número: ");
-                                    	play = teclado.nextInt();
-                                    	}
+                             		if (play==1) { // Si se quiere seguir jugando, se sube de nivel
+                             			golpes=0;
+                             			nivel+=1;
+                             			matriz = genMnivel(nivel, f, c);
+                                     	info (matriz, golpes, nivel);
+                             		}
 
-
-                                 	if (play==1) {
-                                 			golpes=0;
-                                 			nivel+=1;
-                                 			matriz = genMnivel(nivel, f, c);
-                                         	info (matriz, golpes, nivel);
-                                 	}
-
-                                 	if (play==-1){
-                                	play=-2;
-                                 	}
-                            	}
-                        	}
-
-                        	else {
-                        		if (play!=-2){
-                            	System.out.println("Número no válido, pruebe de nuevo.");
+                             		if (play==-1){ //Si no, se sale del juego
+                             			play=-2;
+                             		}
                         		}
-                        	}
+                    	}
+
+                    	else {
+                    		if (play!=-2){
+                        	System.out.println("NÃºmero no vÃ¡lido, pruebe de nuevo."); //Si el numero no estÃ¡ asignado
+                    		}
                     	}
                 	}
             	}
         	}
     	}
-    	System.out.println("¡VUELVA PRONTO!");
+	}
+    System.out.println("Guardando puntuaciones. Espere..."); // guarda puntuaciones en el fichero antes de cerrar el programa	
+    	escribir (result, fichero);
+	System.out.println("Â¡VUELVA PRONTO!");		
 	}
 
 
@@ -180,7 +238,7 @@ public class make_all_0 {
 
  	}
 
- 	public static int[][] juego (int play, int [][] matriz){ // Proceso por el cual se resta según la fila y columna elegida
+ 	public static int[][] juego (int play, int [][] matriz){ // Proceso por el cual se resta segÃºn la fila y columna elegida
      	int f = (play/10)-1; // La matriz utiliza valores del 0-5 mientras que le damos del 1-6
      	int c = (play%10)-1;
 
@@ -209,9 +267,9 @@ public class make_all_0 {
      	return matriz;
  	}
 
- 	public static void info (int [][] matriz, int golpes, int nivel) {
-     	System.out.println ("Recomenzar (01) - Nuevo (02) - Calificación (03) - Cambiar nivel (04) - Salir (0-2)");
-     	System.out.println("Un golpe decrementará el valor de esa casilla en 1, y también los valores de sus 4 vecinas.");
+ 	public static void info (int [][] matriz, int golpes, int nivel) { 	// Da informaciÃ³n sobre el uso y la partida
+     	System.out.println ("Recomenzar (01) - Nuevo (02) - CalificaciÃ³n (03) - Cambiar nivel (04) - Salir (0-2)");
+     	System.out.println("Un golpe decrementarÃ¡ el valor de esa casilla en 1, y tambiÃ©n los valores de sus 4 vecinas.");
      	System.out.println("Objetivo: Dejar todas las casillas en '0'");
      	System.out.println("AYUDA: la casilla de arriba a la izquierda es el 11, la de abajo a la derecha es la 66 (en matriz 6x6)");
      	System.out.println("");
@@ -220,7 +278,7 @@ public class make_all_0 {
      	imprimir (matriz);
  	}
 
- 	public static int [][] copyArray (int [][]matriz){
+ 	public static int [][] copyArray (int [][]matriz){ 	// copia un array bidimensional en otro
 
      	int [][] m2 = new int [matriz.length][matriz[0].length];
 
@@ -235,16 +293,48 @@ public class make_all_0 {
  	return m2;
  }
 
- 	public static void infojuegoganado (int nivel, int golpes){
+ 	public static double infojuegoganado (int nivel, int golpes){ 	// Da informaciÃ³n sobre el juego al ganar la partida
 		
  		double resultado = (nivel*3/(double)golpes);
     	
- 		if (resultado==1) System.out.println("¡PERFECTO! Hecho en " + golpes + " golpes");
-    	if (resultado>1) System.out.println("¡EXTRAORDINARIAMENTE BIEN! Hecho en " + golpes + " golpes");
+ 		if (resultado==1) System.out.println("Â¡PERFECTO! Hecho en " + golpes + " golpes");
+    	if (resultado>1) System.out.println("Â¡EXTRAORDINARIAMENTE BIEN! Hecho en " + golpes + " golpes");
     	if (resultado<1) System.out.println("Hecho en " + golpes + " golpes");
 
 
-    	System.out.println("Tu puntuación es: " + (resultado));
-    	System.out.println("¿Desea seguir jugando? (1:Sí  -1:No)"); 		// Opciones cuando ganas el juego
- 	}
+    	System.out.println("Tu puntuaciÃ³n es: " + (resultado));
+    	System.out.println("Â¿Desea seguir jugando? (1:SÃ­  -1:No)"); 
+    	
+    	return resultado; // Opciones cuando ganas el juego
+ 	}	
+ 	
+ 	public static int extraer(int i, String fichero){ // Extrae las puntuaciones almacenadas en el fichero
+ 		try{
+ 			 coger = new Scanner(new File(fichero));
+ 		 }catch(FileNotFoundException e){
+ 			 System.out.println("Creando ficheros, espere... ");
+ 		     return 0;	 
+ 		 }
+ 		 int[] result = new int[9];
+ 		 for(int h = 0; h <= 8; h++){
+ 			 result[h] = coger.nextInt();
+ 		 }
+ 		 coger.close();
+ 		 return result[i];
+ 	 }
+ 	 
+ 	public static void escribir(int[] result, String fichero){ // Escribe las puntuaciones almacenadas en el fichero
+ 		 try{
+ 			 dar = new PrintWriter(fichero);
+ 		 }catch(IOException e){
+ 			 System.out.println("VAYA, PARECE SER QUE NO SE PUEDE.");
+ 			 System.out.println("error :" +e);
+ 		 }
+ 		 for(int i = 0; i <= 8 ;i++){
+ 			 dar.print(result[i]+" \n");
+ 		 }
+ 			dar.close(); 
+ 			 
+ 	 }
+
 }
